@@ -11,7 +11,7 @@ var originalLanguage;
 
 const apiKey = 'trnsl.1.1.20171008T131614Z.a64f46c8e27e5fb1.f97d045c6897bb518e230158f23e124334693338';
 const apiUrl = `https://translate.yandex.net/api/v1.5/tr.json/translate?key=${apiKey}`;
-const apiLangsUrl = `https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=${apiKey}&ui=${originalLanguage}`;
+const apiLangsUrl = `https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=${apiKey}`;
 
 http.createServer(function (req, res) {
     if(req.url === '/favicon.ico') {
@@ -43,6 +43,7 @@ http.createServer(function (req, res) {
     res.writeHead(200, {'Content-Type': 'application/json; charset="utf-8"'});
 
     getLangPairs().then((pairs) => {
+        console.log(pairs);
         getTranslations(pairs).then((translations) => {
             res.end(JSON.stringify(translations));
         });
@@ -84,7 +85,7 @@ const getTranslation = async (text, from, to) => {
 }
 
 async function getLangPairs() {
-    const langs = await axios.get(apiLangsUrl)
+    const langs = await axios.get(apiLangsUrl + '&ui=' + originalLanguage)
         .catch((e) => {
             console.error(e);
         })
