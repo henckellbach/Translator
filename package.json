@@ -1,0 +1,14 @@
+{
+  "name": "Translator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "node index.js"
+  },
+  "author": "Filip Novotny",
+  "license": "MIT",
+  "devDependencies": {
+    "axios": "^0.18.0"
+  }
+}
