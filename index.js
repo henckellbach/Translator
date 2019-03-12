@@ -6,12 +6,14 @@ const url = require('url')
 
 const translationCount = 6
 
-var originalText
-var originalLanguage
+let originalText
+let originalLanguage
 
 const apiKey = 'trnsl.1.1.20171008T131614Z.a64f46c8e27e5fb1.f97d045c6897bb518e230158f23e124334693338'
 const apiUrl = `https://translate.yandex.net/api/v1.5/tr.json/translate?key=${apiKey}`
 const apiLangsUrl = `https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=${apiKey}`
+
+const allowedOrigins = ['http://127.0.0.1:8080', 'http://localhost:8080'];
 
 http.createServer(function (req, res) {
     if (req.url === '/favicon.ico') {
@@ -37,17 +39,24 @@ http.createServer(function (req, res) {
         return
     } else {
         originalText = parsedURL.query.text
-        originalLanguage = parsedURL.query.lang
+        originalLanguage = { code: parsedURL.query.lang}
     }
 
-    res.writeHead(200, { 'Content-Type': 'application/json; charset="utf-8"' })
+
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'application/json; charset="utf-8"')
+
+    const origin = req.headers.origin
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin)
+    }
 
     getLangPairs().then((pairs) => {
         getTranslations(pairs).then((translations) => {
             res.end(JSON.stringify(translations))
         })
     })
-}).listen(process.env.PORT || 8080)
+}).listen(process.env.PORT || 5000)
 
 
 const getTranslations = async (langPairs) => {
@@ -64,11 +73,11 @@ const getTranslations = async (langPairs) => {
 
 const getTranslation = async (text, from, to) => {
     text = encodeURI(text)
-    from = encodeURI(from)
-    to = encodeURI(to)
+    fromCode = encodeURI(from.code)
+    toCode = encodeURI(to.code)
 
 
-    const item = await axios.get(apiUrl + '&text=' + text + '&lang=' + from + '-' + to)
+    const item = await axios.get(apiUrl + '&text=' + text + '&lang=' + fromCode + '-' + toCode)
         .catch((e) => {
             console.error(e)
         })
@@ -84,14 +93,26 @@ const getTranslation = async (text, from, to) => {
 }
 
 async function getLangPairs () {
-    const langs = await axios.get(apiLangsUrl + '&ui=' + originalLanguage)
+    const langs = await axios.get(apiLangsUrl + '&ui=' + originalLanguage.code)
         .catch((e) => {
             console.error(e)
         })
         .then((response) => {
-            let result = shuffle(Object.keys(response.data.langs))
-                .filter(val => val !== originalLanguage)
+            originalLanguage.name = response.data.langs[originalLanguage.code]
+
+            const validLangs = Object.keys(response.data.langs)
+                .filter(val => val !== originalLanguage.code)
                 .slice(0, translationCount)
+            const keys = shuffle(validLangs)
+
+            let result = []
+            keys.forEach(key => {
+                result.push({
+                    code: key,
+                    name: response.data.langs[key]
+                })
+            })
+
             return result
         })
 
@@ -117,9 +138,12 @@ async function getLangPairs () {
     return result
 
     function shuffle (a) {
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1))
-            [a[i], a[j]] = [a[j], a[i]]
+        var j, x, i
+        for (i = a.length - 1; i > 0; i--) {
+            j = Math.floor(Math.random() * (i + 1))
+            x = a[i]
+            a[i] = a[j]
+            a[j] = x
         }
         return a
     }
