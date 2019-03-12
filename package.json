@@ -8,7 +8,7 @@
   },
   "author": "Filip Novotny",
   "license": "MIT",
-  "devDependencies": {
+  "dependencies": {
     "axios": "^0.18.0"
   }
 }
