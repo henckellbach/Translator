@@ -13,7 +13,7 @@ const apiKey = 'trnsl.1.1.20171008T131614Z.a64f46c8e27e5fb1.f97d045c6897bb518e23
 const apiUrl = `https://translate.yandex.net/api/v1.5/tr.json/translate?key=${apiKey}`
 const apiLangsUrl = `https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=${apiKey}`
 
-const allowedOrigins = ['http://127.0.0.1:8080', 'http://localhost:8080', 'http://filip.novotny.je'];
+const allowedOrigins = ['http://127.0.0.1:8080', 'http://localhost:8080', 'http://translator.novotny.je'];
 
 http.createServer(function (req, res) {
     if (req.url === '/favicon.ico') {
