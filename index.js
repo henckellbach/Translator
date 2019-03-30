@@ -1,15 +1,15 @@
-// jshint esversion:6
-// jshint ignore:start
 const axios = require('axios')
 const http = require('http')
 const url = require('url')
+
+require('dotenv').config()
 
 const translationCount = 6
 
 let originalText
 let originalLanguage
 
-const apiKey = 'trnsl.1.1.20171008T131614Z.a64f46c8e27e5fb1.f97d045c6897bb518e230158f23e124334693338'
+const apiKey = process.env.YANDEX_API_KEY
 const apiUrl = `https://translate.yandex.net/api/v1.5/tr.json/translate?key=${apiKey}`
 const apiLangsUrl = `https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=${apiKey}`
 
@@ -24,6 +24,9 @@ http.createServer(function (req, res) {
     const query = parsedURL.query
 
     var errors = []
+    if (!apiKey) {
+        errors.push("Please supply a Yandex API Key. (YANDEX_API_KEY in .env)")
+    }
     if (!('text' in query)) {
         errors.push("Please specify a query. (URL parameter 'text')")
     }
